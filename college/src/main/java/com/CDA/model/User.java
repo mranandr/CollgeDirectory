@@ -1,12 +1,9 @@
 package com.CDA.model;
 
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "app_user")
+@Table(name = "college_user")
 public class User {
 
     @Id
@@ -14,42 +11,22 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    @NotBlank
-    @Size(max = 50)
     private String username;
 
     @Column(nullable = false)
-    @NotBlank
-    @Size(max = 255)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;  // Removed @NotBlank
+    private Role role;
 
-    @Column(nullable = false)
-    @NotBlank
-    @Size(max = 100)
-    private String name;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private StudentProfile studentProfile;
 
-    @Column(unique = true, nullable = false)
-    @NotBlank
-    @Size(max = 100)
-    private String email;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private FacultyProfile facultyProfile;
 
-    @Size(max = 15)
-    private String phone;
-
-    public User(String username, Long id, String password, Role role, String name, String email, String phone) {
-        this.username = username;
-        this.id = id;
-        this.password = password;
-        this.role = role;
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-    }
-
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -58,19 +35,19 @@ public class User {
         this.id = id;
     }
 
-    public @NotBlank @Size(max = 50) String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    public void setUsername(@NotBlank @Size(max = 50) String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
-    public @NotBlank @Size(max = 255) String getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotBlank @Size(max = 255) String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
@@ -82,33 +59,23 @@ public class User {
         this.role = role;
     }
 
-    public @NotBlank @Size(max = 100) String getName() {
-        return name;
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
     }
 
-    public void setName(@NotBlank @Size(max = 100) String name) {
-        this.name = name;
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
     }
 
-    public @NotBlank @Size(max = 100) String getEmail() {
-        return email;
+    public FacultyProfile getFacultyProfile() {
+        return facultyProfile;
     }
 
-    public void setEmail(@NotBlank @Size(max = 100) String email) {
-        this.email = email;
-    }
-
-    public @Size(max = 15) String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(@Size(max = 15) String phone) {
-        this.phone = phone;
+    public void setFacultyProfile(FacultyProfile facultyProfile) {
+        this.facultyProfile = facultyProfile;
     }
 
     public enum Role {
-        STUDENT,
-        FACULTY_MEMBER,
-        ADMINISTRATOR
+        STUDENT, FACULTY, ADMIN
     }
 }
