@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,10 @@ public class UserPrincipal implements UserDetails {
         this.password = user.getPassword();
         this.roles = new HashSet<>();
         this.roles.add(user.getRole().name());
+    }
+
+    public UserPrincipal(Optional<User> user) {
+
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.CDA.exception.InvalidCredentialsException;
 import com.CDA.exception.UserNotFoundException;
 import com.CDA.exception.UsernameAlreadyExistsException;
 import com.CDA.model.User;
+import com.CDA.repository.FacultyProfileRepository;
+import com.CDA.repository.StudentProfileRepository;
 import com.CDA.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,12 @@ public class UserService {
     private final AuthenticationManager authManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private FacultyProfileRepository facultyProfileRepository;
+    
+    @Autowired
+    private StudentProfileRepository studentProfileRepository; 
 
     // Constructor injection for all required beans
     @Autowired
@@ -37,7 +45,7 @@ public class UserService {
     // Register user
     public User register(User user) {
         // Check if username already exists
-        if (userRepository.findByUsername(user.getUsername()) != null) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException("Username '" + user.getUsername() + "' is already taken.");
         }
         // Encrypt password
@@ -47,6 +55,10 @@ public class UserService {
 
     // Verify user and generate JWT token
     public String verify(User user) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+
         try {
             Authentication authentication = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
@@ -57,22 +69,35 @@ public class UserService {
         } catch (BadCredentialsException e) {
             return "Invalid username or password";
         }
+
         return "Authentication failed";
     }
 
+
     // Login functionality
-    public User login(String username, String password) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
+    public Optional<User> login(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
             throw new UserNotFoundException("User with username '" + username + "' not found.");
         }
         // Validate password
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.get().getPassword())) {
             throw new InvalidCredentialsException("Invalid password for username '" + username + "'.");
         }
         return user;
     }
 
+    //    public Object fetchProfileByRole(String username) {
+//        User user = userRepository.findByUsername(username)
+//                .UserNotFoundException("User not Found");
+//
+//        if (user.getRole() == User.Role.STUDENT) {
+//            return studentProfileRepository.findByUser_Username(user.getUsername());
+//        } else if (user.getRole() == User.Role.FACULTY) {
+//            return userRepository.findByUsername(user.getUsername());
+//        }
+//        throw new IllegalArgumentException("Invalid role");
+//    }
     // Find user by ID
     public Optional<User> findUserById(Long id) {
         return Optional.ofNullable(userRepository.findById(id).orElseThrow(() ->
@@ -98,7 +123,7 @@ public class UserService {
     }
 
     // Find user by username
-    public Optional<User> findByUsername(String username) {
+    public Optional<Optional<User>> findByUsername(String username) {
         return Optional.ofNullable(userRepository.findByUsername(username));
     }
 }

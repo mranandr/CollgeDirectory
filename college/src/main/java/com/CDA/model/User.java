@@ -75,6 +75,11 @@ public class User {
         this.facultyProfile = facultyProfile;
     }
 
+    public User UserNotFoundException(Object userNotFound) {
+        return null;
+    }
+
+
     public enum Role {
         STUDENT, FACULTY, ADMIN
     }

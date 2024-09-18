@@ -1,8 +1,8 @@
 package com.CDA.service;
 
 import com.CDA.model.StudentProfile;
-import com.CDA.model.User;
 import com.CDA.repository.StudentProfileRepository;
+import com.CDA.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,32 +12,42 @@ import java.util.Optional;
 @Service
 public class StudentProfileService {
 
-    private final StudentProfileRepository studentProfileRepository;
-
     @Autowired
-    public StudentProfileService(StudentProfileRepository studentProfileRepository) {
-        this.studentProfileRepository = studentProfileRepository;
-    }
+    private StudentProfileRepository studentProfileRepository;
 
-    public StudentProfile createProfile(StudentProfile profile) {
+    // Create a new StudentProfile
+    public StudentProfile addUser(StudentProfile profile) {
         return studentProfileRepository.save(profile);
     }
 
-    public Optional<StudentProfile> findProfileById(Long id) {
-        return studentProfileRepository.findById(id);
+    // Get a StudentProfile by ID
+    public Optional<StudentProfile> getUser(Long id) {
+        Optional<StudentProfile> profile = studentProfileRepository.findById(id);
+        if (profile.isEmpty()) {
+            throw new UserNotFoundException("Student Profile not found with ID: " + id);
+        }
+        return profile;
     }
 
-    public StudentProfile updateProfile(StudentProfile profile) {
-        return studentProfileRepository.save(profile);
-    }
-
-    public void deleteProfile(Long id) {
-        studentProfileRepository.deleteById(id);
-    }
-
-    public List<StudentProfile> findAllProfiles() {
+    // Get all StudentProfiles
+    public List<StudentProfile> getAllUsers() {
         return studentProfileRepository.findAll();
     }
+
+    // Update an existing StudentProfile
+    public StudentProfile updateUser(Long id, StudentProfile profile) {
+        Optional<StudentProfile> existingProfile = studentProfileRepository.findById(profile.getId());
+        if (existingProfile.isEmpty()) {
+            throw new UserNotFoundException("Student Profile not found with ID: " + profile.getId());
+        }
+        return studentProfileRepository.save(profile);
+    }
+
+    // Delete a StudentProfile by ID
+    public void deleteProfile(Long id) {
+        if (!studentProfileRepository.existsById(id)) {
+            throw new UserNotFoundException("Student Profile not found with ID: " + id);
+        }
+        studentProfileRepository.deleteById(id);
+    }
 }
-
-
