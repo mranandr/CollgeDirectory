@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../Register.css'; 
 
 const Register = () => {
@@ -10,9 +12,10 @@ const Register = () => {
   const [year, setYear] = useState('');
   const [officeHours, setOfficeHours] = useState('');
 
+  // Handle form submission
   const handleRegister = async (e) => {
     e.preventDefault();
-  
+    
     const registerData = {
       username,
       password,
@@ -21,27 +24,21 @@ const Register = () => {
       year: role === 'STUDENT' ? year : null,
       officeHours: role === 'FACULTY' ? officeHours : null,
     };
-  
+
     try {
-      const response = await axios.post('http://localhost:8081/api/users/register', registerData); // Ensure the correct API endpoint
-      alert(response.data); // Success message
+      var url = 'http://localhost:8081/api/users/register';
+      const response = await axios.post(url, registerData); 
+      toast.success("Registration successful!", { autoClose: 3000 });
     } catch (error) {
       if (error.response) {
-        // Backend returned a response with an error status
-        console.error('Error response:', error.response);
-        alert(`Error: ${error.response.data}`);
+        toast.error(`Error: ${error.response.data}`, { autoClose: 3000 });
       } else if (error.request) {
-        // Request was made, but no response was received
-        console.error('Error request:', error.request);
-        alert('No response from the server. Please try again later.');
+        toast.error('No response from the server. Please try again later.', { autoClose: 3000 });
       } else {
-        // Something happened in setting up the request
-        console.error('Error:', error.message);
-        alert(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message}`, { autoClose: 3000 });
       }
     }
   };
-  
 
   return (
     <div className="register-container">
@@ -99,6 +96,9 @@ const Register = () => {
 
         <button type="submit">Register</button>
       </form>
+
+      {/* Toast container for displaying toast notifications */}
+      <ToastContainer />
     </div>
   );
 };

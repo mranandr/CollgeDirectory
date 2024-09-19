@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -67,17 +65,11 @@ public class UserController {
         };
     }
 
-
     // Get user details based on token
     @GetMapping("/profile")
     public ResponseEntity<User> getUserProfile(@RequestHeader("Authorization") String token) {
-        // Extract the JWT token from the "Bearer token" format
         String jwtToken = token.substring(7);
-
-        // Extract the username from the token
         String username = jwtService.extractUserName(jwtToken);
-
-        // Load the user details from the username
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -85,8 +77,6 @@ public class UserController {
         if (!jwtService.validateToken(jwtToken, userDetails)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
-        // Find the user profile by username if the token is valid
         Optional<User> user = userService.findByUsername(username);
 
         return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))

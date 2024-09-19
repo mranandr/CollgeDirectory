@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @RestController
 @RequestMapping("/api/student-profiles")
 public class StudentProfileController {
@@ -36,7 +34,7 @@ public class StudentProfileController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<StudentProfile>> getAllStudentProfiles() {
         List<StudentProfile> profiles = studentProfileService.findAllProfiles();
         return new ResponseEntity<>(profiles, HttpStatus.OK);

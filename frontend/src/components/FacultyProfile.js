@@ -8,7 +8,7 @@ const FacultyProfile = () => {
   useEffect(() => {
     const fetchFacultyProfile = async () => {
       try {
-        const response = await axios.get('/api/faculty/profile', {
+        const response = await axios.get('http://localhost:8081/api/faculty/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

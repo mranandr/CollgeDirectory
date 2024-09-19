@@ -1,86 +1,99 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import '../Login.css'
+import UserService from "./UserService"; // Assuming UserService is in a separate file
 
-function Login({ setUserRole }) {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+export default function Login() {
+  const [loginForm, setLoginForm] = useState({
+    username: "",
+    password: "",
+  });
+  const navigate = useNavigate();
 
-    
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:8081/api/users/login', {
-                username,
-                password
-            });
+  const onChangeForm = (event) => {
+    const { name, value } = event.target;
+    setLoginForm({ ...loginForm, [name]: value });
+  };
 
-            if (response.status === 200) {
-                const { data } = response;
+  const onSubmitHandler = async (event) => {
+    event.preventDefault();
+    console.log(loginForm);
 
-                if (data.token && data.role) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('role', data.role);
-                    setUserRole(data.role);
+    try {
+      const response = await axios.post("http://localhost:8081/api/users/login", loginForm, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-                    switch (data.role) {
-                        case 'STUDENT':
-                            navigate('/student-dashboard');
-                            break;
-                        case 'FACULTY':
-                            navigate('/faculty-dashboard');
-                            break;
-                        case 'ADMIN':
-                            navigate('/admin-dashboard');
-                            break;
-                        default:
-                            navigate('/');
-                            break;
-                    }
-                } else {
-                    setError('Unexpected response format');
-                }
-            } else {
-                setError('Login failed: ' + (response.data.message || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Error during login:', error);
-            setError('Login failed: ' + (error.response?.data.message || 'An unknown error occurred'));
-        }
-    };
+      // Save token to local storage
+      localStorage.setItem("auth_token", response.data.access_token);
+      localStorage.setItem("auth_token_type", response.data.token_type);
 
-    return (
-        <div className="login-container">
-            <h1>Login</h1>
-            <form onSubmit={handleLogin}>
-                <div className="form-group">
-                    <label htmlFor="username">Username:</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                {error && <p className="error-message">{error}</p>}
-                <button type="submit">Login</button>
-            </form>
+      // Set user details using UserService
+      UserService.setUser(response.data.user);
+
+      // Add success notification
+      toast.success(response.data.detail);
+
+      // Redirect based on role
+      if (response.data.user.role === "STUDENT") {
+        navigate("./student-dashboard");
+      } else {
+        toast.error("Unexpected role. Please try again.");
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-center mb-4 cursor-pointer">
+        Welcome to profileViewer
+      </h1>
+      <p className="w-80 text-center text-sm mb-8 font-semibold text-gray-700 tracking-wide cursor-pointer mx-auto">
+        Please login to your account!
+      </p>
+      <form onSubmit={onSubmitHandler}>
+        <div className="space-y-4">
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            className="block text-sm py-3 px-4 rounded-lg w-full border outline-none focus:ring focus:outline-none focus:ring-yellow-400"
+            onChange={onChangeForm}
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="block text-sm py-3 px-4 rounded-lg w-full border outline-none focus:ring focus:outline-none focus:ring-yellow-400"
+            onChange={onChangeForm}
+          />
         </div>
-    );
+        <div className="text-center mt-6">
+          <button
+            type="submit"
+            className="py-3 w-64 text-xl text-white bg-yellow-400 rounded-2xl hover:bg-yellow-300 active:bg-yellow-500 outline-none"
+          >
+            Sign In
+          </button>
+          <p className="mt-4 text-sm">
+            You don't have an account?{" "}
+            <Link to="/register">
+              <span className="underline cursor-pointer">Register</span>
+            </Link>
+          </p>
+        </div>
+      </form>
+    </div>
+  );
 }
-
-export default Login;
